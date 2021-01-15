@@ -66,7 +66,7 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             try{
                 if(self.chain.length > 0){
-                    const errorLogs = self.validateChain();
+                    const errorLogs = await self.validateChain();
                     if(errorLogs.length > 0) reject("BlockChain validation failed")
                     block.previousBlockHash = self.chain[self.chain.length - 1].hash;
                 }
