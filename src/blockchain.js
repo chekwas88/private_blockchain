@@ -120,17 +120,19 @@ class Blockchain {
             const messageTime = parseInt(message.split(':')[1]);
             const currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
             const validTimePeriod = 5 * 60;
-            if(currentTime - messageTime > validTimePeriod) {
-                resolve('Time out');
-            }
-            const isValid = bitcoinMessage.verify(message, address, signature);
-            if(!isValid) reject('Message verification failed');
+            
             try{
-                let block = new BlockClass.Block({star, owner: address});
-                block = await self._addBlock(block);
-                resolve(block);
+                if(currentTime - messageTime > validTimePeriod) {
+                    resolve('Time out');
+                }else{
+                    const isValid = bitcoinMessage.verify(message, address, signature);
+                    if(!isValid) reject('Message verification failed');
+                    let block = new BlockClass.Block({star, owner: address});
+                    block = await self._addBlock(block);
+                    resolve(block);
+                }
+                
             }catch(error){
-                console.log("catching here")
                 reject(error)
             }
         });
