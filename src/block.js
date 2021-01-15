@@ -43,7 +43,7 @@ class Block {
             self.hash = null;
              // Recalculate the hash of the Block
             const newHash = SHA256(JSON.stringify(self)).toString();
-
+            self.hash = currentHash
             // Comparing if the hashes changed
             resolve(currentHash === newHash)
         });
@@ -59,13 +59,11 @@ class Block {
      *     or Reject with an error.
      */
     getBData() {
-        return new Promise((resolve, reject) => {
+        
              // check that block isn't genesis block
-            if(!this.previousBlockHash) resolve(null);
-
+            if(!this.previousBlockHash) return(null);
             const decodedData = JSON.parse(hex2ascii(this.body));
-            resolve(decodedData);
-        })
+            return(decodedData);
        
     }
 

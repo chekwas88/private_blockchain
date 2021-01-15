@@ -66,6 +66,8 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             try{
                 if(self.chain.length > 0){
+                    const errorLogs = self.validateChain();
+                    if(errorLogs.length > 0) reject("BlockChain validation failed")
                     block.previousBlockHash = self.chain[self.chain.length - 1].hash;
                 }
                 block.height = self.chain.length;
@@ -161,7 +163,7 @@ class Blockchain {
     getBlockByHeight(height) {
         let self = this;
         return new Promise((resolve, reject) => {
-            let block = self.chain.filter(p => p.height === height)[0];
+            let block = self.chain.find(p => p.height === height);
             if(block){
                 resolve(block);
             } else {
@@ -180,8 +182,8 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            this.chain.forEach(async (bk) => {
-                const data = await bk.getBData();
+            this.chain.forEach((bk) => {
+                const data = bk.getBData();
                 if (data && data.owner === address) stars.push(data);
             });
 
@@ -200,15 +202,16 @@ class Blockchain {
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
                 for(let i = 0; i < self.chain.length; i++){
-                    if(!self.chain[i].validate())errorLog.push({
+                    const isValid = await self.chain[i].validate();
+                    if(!isValid)errorLog.push({
                         error: 'block validation failed',
                         block: self.chain[i]
                     });
                     if(i === 0) continue;
-                    const currentBlockHash = self.chain[i].hash;
-                    const previousBlockHash = self.chain[i + 1].previousBlockHash;
-                    if(currentBlockHash !== previousBlockHash)errorLog.push({
-                        error: 'Next Blocks previous hash does not match current block\'s hash',
+                    const currentBlockPreviousHash = self.chain[i].previousBlockHash;
+                    const previousBlock = self.chain[i - 1];
+                    if(currentBlockPreviousHash !== previousBlock.hash)errorLog.push({
+                        error: 'Current Block previousHash does not match Previous block\'s hash',
                         block: self.chain[i]
                     })
                 }
